@@ -36,40 +36,46 @@ export function useNodeMonitoring() {
     const intervalId = setInterval(() => {
       const now = new Date();
       const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const notifications: Array<{ title: string; description: string; variant?: 'destructive' }> = [];
 
-      setNodes(prevNodes =>
-        prevNodes.map(node => {
-          const { status, latency } = simulatePing(node);
-          
-          const newPingData: PingData = { time, latency };
-          const newHistory = [newPingData, ...node.pingHistory].slice(0, MAX_HISTORY);
+      const newNodes = nodes.map(node => {
+        const { status, latency } = simulatePing(node);
+        
+        const newPingData: PingData = { time, latency };
+        const newHistory = [newPingData, ...node.pingHistory].slice(0, MAX_HISTORY);
 
-          if (node.status !== 'offline' && status === 'offline') {
-             toast({
-                title: 'Node Unreachable',
-                description: `${node.name} is now offline.`,
-                variant: 'destructive',
-             });
-          }
-          if (node.status === 'offline' && status === 'online') {
-            toast({
-                title: 'Node Connection Restored',
-                description: `${node.name} is back online.`,
-            });
-          }
+        if (node.status !== 'offline' && status === 'offline') {
+           notifications.push({
+              title: 'Node Unreachable',
+              description: `${node.name} is now offline.`,
+              variant: 'destructive',
+           });
+        }
+        if (node.status === 'offline' && status === 'online') {
+          notifications.push({
+              title: 'Node Connection Restored',
+              description: `${node.name} is back online.`,
+          });
+        }
 
-          return {
-            ...node,
-            status,
-            latency,
-            pingHistory: newHistory,
-          };
-        })
-      );
+        return {
+          ...node,
+          status,
+          latency,
+          pingHistory: newHistory,
+        };
+      });
+
+      setNodes(newNodes);
+
+      notifications.forEach(notification => {
+        toast(notification);
+      });
+
     }, pingInterval);
 
     return () => clearInterval(intervalId);
-  }, [pingInterval, simulatePing, toast]);
+  }, [pingInterval, simulatePing, toast, nodes]);
 
   const addNode = useCallback((name: string) => {
     setNodes(prevNodes => {
