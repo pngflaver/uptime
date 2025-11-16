@@ -38,6 +38,7 @@ const NodeList: React.FC<NodeListProps> = ({ nodes, onRemoveNode, viewMode }) =>
                         <TableHead>Status</TableHead>
                         <TableHead>Node</TableHead>
                         <TableHead>Latency</TableHead>
+                        <TableHead>Uptime</TableHead>
                         <TableHead className="w-[150px] hidden sm:table-cell">Ping History</TableHead>
                         <TableHead className="w-[50px] text-right">Actions</TableHead>
                     </TableRow>

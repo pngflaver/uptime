@@ -59,11 +59,17 @@ const NodeCard: React.FC<NodeCardProps> = ({ node, onRemove }) => {
       <CardContent className="flex-1">
         <PingChart data={node.pingHistory} />
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex justify-between">
         <p className="text-sm text-muted-foreground">
-          Current Latency:{' '}
+          Latency:{' '}
           <span className="font-bold text-foreground">
             {node.status === 'online' && node.latency !== null ? `${node.latency} ms` : 'N/A'}
+          </span>
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Uptime:{' '}
+          <span className="font-bold text-foreground">
+            {node.uptime.toFixed(2)}%
           </span>
         </p>
       </CardFooter>

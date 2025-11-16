@@ -9,6 +9,7 @@ export interface Node {
   status: 'online' | 'offline' | 'pending';
   latency: number | null;
   pingHistory: PingData[];
+  uptime: number;
 }
 
 export type ViewMode = 'grid' | 'list';

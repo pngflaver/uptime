@@ -7,10 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 const MAX_HISTORY = 30;
 
 const initialNodes: Node[] = [
-  { id: '1', name: 'google.com', status: 'pending', latency: null, pingHistory: [] },
-  { id: '2', name: 'api.github.com', status: 'pending', latency: null, pingHistory: [] },
-  { id: '3', name: '1.1.1.1', status: 'pending', latency: null, pingHistory: [] },
-  { id: '4', name: 'down-node.test', status: 'pending', latency: null, pingHistory: [] },
+  { id: '1', name: 'google.com', status: 'pending', latency: null, pingHistory: [], uptime: 0 },
+  { id: '2', name: 'api.github.com', status: 'pending', latency: null, pingHistory: [], uptime: 0 },
+  { id: '3', name: '1.1.1.1', status: 'pending', latency: null, pingHistory: [], uptime: 0 },
+  { id: '4', name: 'down-node.test', status: 'pending', latency: null, pingHistory: [], uptime: 0 },
 ];
 
 export function useNodeMonitoring() {
@@ -44,6 +44,9 @@ export function useNodeMonitoring() {
         const newPingData: PingData = { time, latency };
         const newHistory = [newPingData, ...node.pingHistory].slice(0, MAX_HISTORY);
 
+        const onlinePings = newHistory.filter(p => p.latency !== null).length;
+        const uptime = newHistory.length > 0 ? (onlinePings / newHistory.length) * 100 : 0;
+
         if (node.status !== 'offline' && status === 'offline') {
            notifications.push({
               title: 'Node Unreachable',
@@ -63,6 +66,7 @@ export function useNodeMonitoring() {
           status,
           latency,
           pingHistory: newHistory,
+          uptime,
         };
       });
 
@@ -93,6 +97,7 @@ export function useNodeMonitoring() {
         status: 'pending',
         latency: null,
         pingHistory: [],
+        uptime: 0,
       };
       return [...prevNodes, newNode];
     });

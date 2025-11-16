@@ -42,6 +42,7 @@ const NodeRow: React.FC<NodeRowProps> = ({ node, onRemove }) => {
       <TableCell>
         {node.status === 'online' && node.latency !== null ? `${node.latency} ms` : 'N/A'}
       </TableCell>
+       <TableCell>{node.uptime.toFixed(2)}%</TableCell>
       <TableCell className="hidden sm:table-cell">
         <div className="h-[40px] w-[150px]">
           <PingChart data={node.pingHistory} />
