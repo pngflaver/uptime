@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Separator } from '../ui/separator';
 
 interface SettingsDialogProps {
   isOpen: boolean;
@@ -58,58 +59,62 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <div className="py-4 space-y-6">
+            <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-4">
+                <h3 className="font-medium text-lg">Add New Node</h3>
+                <FormField
+                    control={form.control}
+                    name="displayName"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Display Name</FormLabel>
+                        <FormControl>
+                        <Input placeholder="e.g., My Web Server" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Node IP or Domain</FormLabel>
+                        <FormControl>
+                        <Input placeholder="e.g., 192.168.1.1 or my-server.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                </div>
+                <DialogFooter className="!justify-end">
+                    <Button type="submit">Add Node</Button>
+                </DialogFooter>
+            </form>
+            </Form>
+            
+            <Separator />
+
             <div className="space-y-4">
-              <h3 className="font-medium">Add New Node</h3>
-              <FormField
-                control={form.control}
-                name="displayName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Display Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., My Web Server" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Node IP or Domain</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 192.168.1.1 or my-server.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <DialogFooter>
-              <Button type="submit">Add Node</Button>
-            </DialogFooter>
-          </form>
-        </Form>
-        
-        <div className="space-y-4 pt-4 border-t">
-            <h3 className="font-medium">Configuration</h3>
-            <div className="space-y-3">
-                <Label htmlFor="ping-interval">Ping Interval: {pingInterval} seconds</Label>
-                <div className='flex items-center gap-4'>
-                    <span className='text-sm text-muted-foreground'>1s</span>
-                    <Slider
-                        id="ping-interval"
-                        min={1}
-                        max={10}
-                        step={1}
-                        value={[pingInterval]}
-                        onValueChange={(value) => onPingIntervalChange(value[0])}
-                    />
-                    <span className='text-sm text-muted-foreground'>10s</span>
+                <h3 className="font-medium text-lg">Configuration</h3>
+                <div className="space-y-3">
+                    <Label htmlFor="ping-interval">Global Ping Interval: {pingInterval} seconds</Label>
+                    <div className='flex items-center gap-4'>
+                        <span className='text-sm text-muted-foreground'>1s</span>
+                        <Slider
+                            id="ping-interval"
+                            min={1}
+                            max={10}
+                            step={1}
+                            value={[pingInterval]}
+                            onValueChange={(value) => onPingIntervalChange(value[0])}
+                        />
+                        <span className='text-sm text-muted-foreground'>10s</span>
+                    </div>
                 </div>
             </div>
         </div>

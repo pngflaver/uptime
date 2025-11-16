@@ -1,9 +1,9 @@
 import React from 'react';
 import type { Node } from '@/lib/types';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Trash2 } from 'lucide-react';
+import { MoreVertical, Trash2, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import PingChart from './ping-chart';
 import { formatDistanceStrict } from 'date-fns';
@@ -11,6 +11,7 @@ import { formatDistanceStrict } from 'date-fns';
 interface NodeRowProps {
   node: Node;
   onRemove: (id: string) => void;
+  onEdit: (node: Node) => void;
 }
 
 const StatusIndicator: React.FC<{ status: Node['status'] }> = ({ status }) => {
@@ -62,7 +63,7 @@ const UptimeStatus: React.FC<{ node: Node }> = ({ node }) => {
 };
 
 
-const NodeRow: React.FC<NodeRowProps> = ({ node, onRemove }) => {
+const NodeRow: React.FC<NodeRowProps> = ({ node, onRemove, onEdit }) => {
   return (
     <TableRow>
       <TableCell>
@@ -93,6 +94,11 @@ const NodeRow: React.FC<NodeRowProps> = ({ node, onRemove }) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(node)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                <span>Edit Node</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onRemove(node.id)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               <span>Remove Node</span>

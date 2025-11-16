@@ -9,10 +9,11 @@ import NodeRow from './node-row';
 interface NodeListProps {
   nodes: Node[];
   onRemoveNode: (id: string) => void;
+  onEditNode: (node: Node) => void;
   viewMode: ViewMode;
 }
 
-const NodeList: React.FC<NodeListProps> = ({ nodes, onRemoveNode, viewMode }) => {
+const NodeList: React.FC<NodeListProps> = ({ nodes, onRemoveNode, onEditNode, viewMode }) => {
   if (nodes.length === 0) {
     return (
       <Card className="mt-8 col-span-full">
@@ -45,7 +46,7 @@ const NodeList: React.FC<NodeListProps> = ({ nodes, onRemoveNode, viewMode }) =>
                 </TableHeader>
                 <TableBody>
                     {nodes.map(node => (
-                        <NodeRow key={node.id} node={node} onRemove={onRemoveNode} />
+                        <NodeRow key={node.id} node={node} onRemove={onRemoveNode} onEdit={onEditNode} />
                     ))}
                 </TableBody>
             </Table>
@@ -56,7 +57,7 @@ const NodeList: React.FC<NodeListProps> = ({ nodes, onRemoveNode, viewMode }) =>
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
       {nodes.map(node => (
-        <NodeCard key={node.id} node={node} onRemove={onRemoveNode} />
+        <NodeCard key={node.id} node={node} onRemove={onRemoveNode} onEdit={onEditNode} />
       ))}
     </div>
   );

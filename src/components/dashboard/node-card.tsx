@@ -1,9 +1,9 @@
 import React from 'react';
 import type { Node } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Trash2 } from 'lucide-react';
+import { MoreVertical, Trash2, Pencil } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import PingChart from './ping-chart';
 import { formatDistanceStrict } from 'date-fns';
@@ -11,6 +11,7 @@ import { formatDistanceStrict } from 'date-fns';
 interface NodeCardProps {
   node: Node;
   onRemove: (id: string) => void;
+  onEdit: (node: Node) => void;
 }
 
 const StatusIndicator: React.FC<{ status: Node['status'] }> = ({ status }) => {
@@ -64,7 +65,7 @@ const UptimeStatus: React.FC<{ node: Node }> = ({ node }) => {
     );
   };
 
-const NodeCard: React.FC<NodeCardProps> = ({ node, onRemove }) => {
+const NodeCard: React.FC<NodeCardProps> = ({ node, onRemove, onEdit }) => {
   return (
     <Card className="flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader className="flex flex-row items-start justify-between">
@@ -79,6 +80,11 @@ const NodeCard: React.FC<NodeCardProps> = ({ node, onRemove }) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(node)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              <span>Edit Node</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => onRemove(node.id)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
               <Trash2 className="mr-2 h-4 w-4" />
               <span>Remove Node</span>

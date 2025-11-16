@@ -47,7 +47,7 @@ export function useNodeMonitoring() {
         let newLastStatusChange = node.lastStatusChange;
 
         // Status changed, handle uptime calculation and notifications
-        if (status !== node.status) {
+        if (status !== node.status && node.status !== 'pending') {
           if (node.status === 'online') { // If it *was* online, add the duration to total uptime
             newTotalUptimeSeconds += (now - node.lastStatusChange) / 1000;
           }
@@ -62,6 +62,8 @@ export function useNodeMonitoring() {
             // Use a timeout to ensure toast is called after the render cycle
             setTimeout(() => toast(notification), 0);
           }
+        } else if (node.status === 'pending') {
+          newLastStatusChange = now; // Set initial status change time
         }
         
         let currentUptimeSeconds = newTotalUptimeSeconds;
@@ -70,7 +72,7 @@ export function useNodeMonitoring() {
           currentUptimeSeconds += (now - newLastStatusChange) / 1000;
         }
 
-        const appStartTime = (new Date(node.id).getTime());
+        const appStartTime = new Date(node.id).getTime();
         const totalMonitoredSeconds = (now - appStartTime) / 1000;
         const uptime = totalMonitoredSeconds > 0 ? (currentUptimeSeconds / totalMonitoredSeconds) * 100 : 100;
 
@@ -120,10 +122,18 @@ export function useNodeMonitoring() {
   const removeNode = useCallback((id: string) => {
     setNodes(prevNodes => prevNodes.filter(node => node.id !== id));
   }, []);
+
+  const updateNode = useCallback((id: string, displayName: string, name: string) => {
+    setNodes(prevNodes => 
+      prevNodes.map(node => 
+        node.id === id ? { ...node, displayName, name } : node
+      )
+    );
+  }, []);
   
   const handleSetPingInterval = (value: number) => {
     setPingInterval(value * 1000);
   }
 
-  return { nodes, addNode, removeNode, pingInterval: pingInterval / 1000, setPingInterval: handleSetPingInterval };
+  return { nodes, addNode, removeNode, updateNode, pingInterval: pingInterval / 1000, setPingInterval: handleSetPingInterval };
 }
