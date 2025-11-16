@@ -18,6 +18,7 @@ export default function Home() {
     addNode,
     removeNode,
     updateNode,
+    reorderNodes,
     pingInterval,
     setPingInterval,
     activityLog,
@@ -46,6 +47,7 @@ export default function Home() {
           onRemoveNode={removeNode} 
           onEditNode={setEditingNode} 
           viewMode={viewMode} 
+          onReorder={reorderNodes}
         />
       </main>
       <SettingsDialog

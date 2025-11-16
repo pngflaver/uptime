@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import type { Node } from '@/lib/types';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils';
 import PingChart from './ping-chart';
 import { formatDistanceStrict } from 'date-fns';
 
-interface NodeRowProps {
+// Props passed from the parent, plus any standard HTML attributes for the TableRow
+interface NodeRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   node: Node;
   onRemove: (id: string) => void;
   onEdit: (node: Node) => void;
@@ -62,52 +63,54 @@ const UptimeStatus: React.FC<{ node: Node }> = ({ node }) => {
     );
 };
 
+const NodeRow = forwardRef<HTMLTableRowElement, NodeRowProps>(
+  ({ node, onRemove, onEdit, ...props }, ref) => {
+    return (
+        <TableRow ref={ref} {...props}>
+            <TableCell>
+                <StatusIndicator status={node.status} />
+            </TableCell>
+            <TableCell className="font-medium">
+                <div className="flex flex-col">
+                    <span className="font-bold truncate" title={node.displayName}>{node.displayName}</span>
+                    <span className="text-xs text-muted-foreground truncate" title={node.name}>{node.name}</span>
+                </div>
+            </TableCell>
+            <TableCell>
+                {node.status === 'online' && node.latency !== null ? `${node.latency} ms` : 'N/A'}
+            </TableCell>
+            <TableCell>
+                <UptimeStatus node={node} />
+            </TableCell>
+            <TableCell className="hidden sm:table-cell">
+                <div className="h-[40px] w-[150px]">
+                <PingChart data={node.pingHistory} />
+                </div>
+            </TableCell>
+            <TableCell className="text-right">
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onEdit(node)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        <span>Edit Node</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => onRemove(node.id)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Remove Node</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+                </DropdownMenu>
+            </TableCell>
+        </TableRow>
+    );
+});
 
-const NodeRow: React.FC<NodeRowProps> = ({ node, onRemove, onEdit }) => {
-  return (
-    <TableRow>
-      <TableCell>
-        <StatusIndicator status={node.status} />
-      </TableCell>
-      <TableCell className="font-medium">
-        <div className="flex flex-col">
-            <span className="font-bold truncate" title={node.displayName}>{node.displayName}</span>
-            <span className="text-xs text-muted-foreground truncate" title={node.name}>{node.name}</span>
-        </div>
-      </TableCell>
-      <TableCell>
-        {node.status === 'online' && node.latency !== null ? `${node.latency} ms` : 'N/A'}
-      </TableCell>
-       <TableCell>
-        <UptimeStatus node={node} />
-       </TableCell>
-      <TableCell className="hidden sm:table-cell">
-        <div className="h-[40px] w-[150px]">
-          <PingChart data={node.pingHistory} />
-        </div>
-      </TableCell>
-      <TableCell className="text-right">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(node)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                <span>Edit Node</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onRemove(node.id)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>Remove Node</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
-    </TableRow>
-  );
-};
+NodeRow.displayName = 'NodeRow';
 
 export default NodeRow;

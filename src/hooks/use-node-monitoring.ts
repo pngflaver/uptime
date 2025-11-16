@@ -35,86 +35,85 @@ export function useNodeMonitoring() {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      const now = Date.now();
-      const timeStr = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      
-      const newActivity: ActivityLog[] = [];
-      const notifications: Parameters<typeof toast>[] = [];
-
-      const updatedNodes = nodes.map(node => {
-        const { status, latency } = simulatePing(node);
+      setNodes(prevNodes => {
+        const now = Date.now();
+        const timeStr = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         
-        const newPingData: PingData = { time: timeStr, latency };
-        const newHistory = [newPingData, ...node.pingHistory].slice(0, MAX_HISTORY);
+        const newActivity: ActivityLog[] = [];
+        const notifications: Parameters<typeof toast>[] = [];
 
-        let newTotalUptimeSeconds = node.totalUptimeSeconds;
-        let newLastStatusChange = node.lastStatusChange;
-
-        // Status changed, handle uptime calculation and notifications
-        if (status !== node.status && node.status !== 'pending') {
-          const duration = (now - node.lastStatusChange) / 1000;
-          if (node.status === 'online') { // If it *was* online, add the duration to total uptime
-            newTotalUptimeSeconds += duration;
-          }
-
-          newActivity.push({
-            id: new Date().toISOString() + Math.random(),
-            nodeId: node.id,
-            nodeDisplayName: node.displayName,
-            nodeName: node.name,
-            status,
-            timestamp: now,
-            duration,
-          });
-
-          newLastStatusChange = now; // Reset the status change timestamp
+        const updatedNodes = prevNodes.map(node => {
+          const { status, latency } = simulatePing(node);
           
-          if (node.status !== 'pending') { // Don't show notifications for initial state
-            notifications.push([{
-              title: status === 'offline' ? 'Node Unreachable' : 'Node Connection Restored',
-              description: `${node.displayName} (${node.name}) is now ${status}.`,
-              variant: status === 'offline' ? 'destructive' as const : undefined,
-            }]);
+          const newPingData: PingData = { time: timeStr, latency };
+          const newHistory = [newPingData, ...node.pingHistory].slice(0, MAX_HISTORY);
+
+          let newTotalUptimeSeconds = node.totalUptimeSeconds;
+          let newLastStatusChange = node.lastStatusChange;
+
+          if (status !== node.status && node.status !== 'pending') {
+            const duration = (now - node.lastStatusChange) / 1000;
+            if (node.status === 'online') {
+              newTotalUptimeSeconds += duration;
+            }
+
+            newActivity.push({
+              id: new Date().toISOString() + Math.random(),
+              nodeId: node.id,
+              nodeDisplayName: node.displayName,
+              nodeName: node.name,
+              status,
+              timestamp: now,
+              duration,
+            });
+
+            newLastStatusChange = now;
+            
+            if (node.status !== 'pending') {
+              notifications.push([{
+                title: status === 'offline' ? 'Node Unreachable' : 'Node Connection Restored',
+                description: `${node.displayName} (${node.name}) is now ${status}.`,
+                variant: status === 'offline' ? 'destructive' as const : undefined,
+              }]);
+            }
+          } else if (node.status === 'pending') {
+            newLastStatusChange = now;
           }
-        } else if (node.status === 'pending') {
-          newLastStatusChange = now; // Set initial status change time
+          
+          let currentUptimeSeconds = newTotalUptimeSeconds;
+          if (status === 'online') {
+            currentUptimeSeconds += (now - newLastStatusChange) / 1000;
+          }
+
+          const appStartTime = new Date(node.id).getTime();
+          const totalMonitoredSeconds = (now - appStartTime) / 1000;
+          const uptime = totalMonitoredSeconds > 0 ? (currentUptimeSeconds / totalMonitoredSeconds) * 100 : 100;
+
+          return {
+            ...node,
+            status,
+            latency,
+            pingHistory: newHistory,
+            uptime: Math.min(100, uptime),
+            totalUptimeSeconds: newTotalUptimeSeconds,
+            lastStatusChange: newLastStatusChange,
+          };
+        });
+
+        if (newActivity.length > 0) {
+          setActivityLog(prevLog => [...newActivity, ...prevLog]);
         }
         
-        let currentUptimeSeconds = newTotalUptimeSeconds;
-        if (status === 'online') {
-          // Add the current online duration to the total for the percentage calculation
-          currentUptimeSeconds += (now - newLastStatusChange) / 1000;
+        if (notifications.length > 0) {
+          notifications.forEach(n => toast(...n));
         }
 
-        const appStartTime = new Date(node.id).getTime();
-        const totalMonitoredSeconds = (now - appStartTime) / 1000;
-        const uptime = totalMonitoredSeconds > 0 ? (currentUptimeSeconds / totalMonitoredSeconds) * 100 : 100;
-
-        return {
-          ...node,
-          status,
-          latency,
-          pingHistory: newHistory,
-          uptime: Math.min(100, uptime), // Cap at 100
-          totalUptimeSeconds: newTotalUptimeSeconds,
-          lastStatusChange: newLastStatusChange,
-        };
+        return updatedNodes;
       });
-
-      setNodes(updatedNodes);
-
-      if (newActivity.length > 0) {
-        setActivityLog(prevLog => [...newActivity, ...prevLog]);
-      }
-      
-      if (notifications.length > 0) {
-        notifications.forEach(n => toast(...n));
-      }
-
     }, pingInterval);
 
     return () => clearInterval(intervalId);
-  }, [pingInterval, simulatePing, toast, nodes]);
+  }, [pingInterval, simulatePing, toast]);
 
   const addNode = useCallback((displayName: string, name: string) => {
     setNodes(prevNodes => {
@@ -127,7 +126,7 @@ export function useNodeMonitoring() {
         return prevNodes;
       }
       const newNode: Node = {
-        id: new Date().toISOString(), // Use ISO string for a more reliable start time
+        id: new Date().toISOString(),
         displayName,
         name,
         status: 'pending',
@@ -152,10 +151,19 @@ export function useNodeMonitoring() {
       )
     );
   }, []);
+
+  const reorderNodes = useCallback((startIndex: number, endIndex: number) => {
+    setNodes(prevNodes => {
+      const result = Array.from(prevNodes);
+      const [removed] = result.splice(startIndex, 1);
+      result.splice(endIndex, 0, removed);
+      return result;
+    });
+  }, []);
   
   const handleSetPingInterval = (value: number) => {
     setPingInterval(value * 1000);
   }
 
-  return { nodes, addNode, removeNode, updateNode, pingInterval: pingInterval / 1000, setPingInterval: handleSetPingInterval, activityLog };
+  return { nodes, addNode, removeNode, updateNode, reorderNodes, pingInterval: pingInterval / 1000, setPingInterval: handleSetPingInterval, activityLog };
 }

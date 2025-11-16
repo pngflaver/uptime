@@ -84,7 +84,7 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url('https://yt3.googleusercontent.com/ytc/AIdro_k0LA4LmUsFTG9_zlgHCFr2jzTCbTBL_xKXGVL9ymz5Ug=s900-c-k-c0x00ffffff-no-rj');
+    background-image: url('https://projectstrategies.com.au/app/uploads/2018/03/DSC03064-2048x1361.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -98,7 +98,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.85);
     z-index: -1;
   }
 
