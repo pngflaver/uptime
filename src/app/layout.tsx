@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'NodeVigil',
   description: 'A modern dashboard to monitor your nodes.',
   icons: {
-    icon: 'https://img.icons8.com/?size=100&id=ez7twa14r0J7&format=png&color=000000',
+    icon: 'https://www.icons101.com/icon_ico/id_73691/Batman.ico',
   },
 };
 
