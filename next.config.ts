@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
         hostname: 'logodix.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'yt3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },

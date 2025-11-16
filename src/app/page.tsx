@@ -33,7 +33,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-transparent">
       <Header 
         onOpenSettings={() => setIsSettingsOpen(true)}
         viewMode={viewMode}
