@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MoreVertical, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import PingChart from './ping-chart';
+import { formatDistanceStrict } from 'date-fns';
 
 interface NodeCardProps {
   node: Node;
@@ -31,6 +32,37 @@ const StatusIndicator: React.FC<{ status: Node['status'] }> = ({ status }) => {
     </div>
   );
 };
+
+const UptimeStatus: React.FC<{ node: Node }> = ({ node }) => {
+    const [currentTime, setCurrentTime] = React.useState(Date.now());
+  
+    React.useEffect(() => {
+      const timer = setInterval(() => {
+        setCurrentTime(Date.now());
+      }, 1000);
+      return () => clearInterval(timer);
+    }, []);
+  
+    if (node.status === 'pending') {
+      return (
+        <p className="text-sm text-muted-foreground">
+          Uptime: <span className="font-bold text-foreground">N/A</span>
+        </p>
+      );
+    }
+  
+    const duration = formatDistanceStrict(new Date(node.lastStatusChange), currentTime, {
+      addSuffix: false,
+    });
+  
+    const label = node.status === 'online' ? 'Up for' : 'Down for';
+  
+    return (
+      <p className="text-sm text-muted-foreground">
+        {label}: <span className="font-bold text-foreground">{duration}</span>
+      </p>
+    );
+  };
 
 const NodeCard: React.FC<NodeCardProps> = ({ node, onRemove }) => {
   return (
@@ -66,12 +98,7 @@ const NodeCard: React.FC<NodeCardProps> = ({ node, onRemove }) => {
             {node.status === 'online' && node.latency !== null ? `${node.latency} ms` : 'N/A'}
           </span>
         </p>
-        <p className="text-sm text-muted-foreground">
-          Uptime:{' '}
-          <span className="font-bold text-foreground">
-            {node.uptime.toFixed(2)}%
-          </span>
-        </p>
+        <UptimeStatus node={node} />
       </CardFooter>
     </Card>
   );

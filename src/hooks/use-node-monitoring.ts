@@ -36,9 +36,8 @@ export function useNodeMonitoring() {
     const intervalId = setInterval(() => {
       const now = Date.now();
       const timeStr = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const notifications: Array<{ title: string; description: string; variant?: 'destructive' }> = [];
-
-      const newNodes = nodes.map(node => {
+      
+      const updatedNodes = nodes.map(node => {
         const { status, latency } = simulatePing(node);
         
         const newPingData: PingData = { time: timeStr, latency };
@@ -47,34 +46,32 @@ export function useNodeMonitoring() {
         let newTotalUptimeSeconds = node.totalUptimeSeconds;
         let newLastStatusChange = node.lastStatusChange;
 
+        // Status changed, handle uptime calculation and notifications
         if (status !== node.status) {
-          if (node.status === 'online') {
+          if (node.status === 'online') { // If it *was* online, add the duration to total uptime
             newTotalUptimeSeconds += (now - node.lastStatusChange) / 1000;
           }
-          newLastStatusChange = now;
+          newLastStatusChange = now; // Reset the status change timestamp
           
-          if (node.status !== 'pending') {
-            if (status === 'offline') {
-              notifications.push({
-                  title: 'Node Unreachable',
-                  description: `${node.name} is now offline.`,
-                  variant: 'destructive',
-              });
-            } else if (status === 'online') {
-              notifications.push({
-                  title: 'Node Connection Restored',
-                  description: `${node.name} is back online.`,
-              });
-            }
+          if (node.status !== 'pending') { // Don't show notifications for initial state
+            const notification = {
+              title: status === 'offline' ? 'Node Unreachable' : 'Node Connection Restored',
+              description: `${node.name} is now ${status}.`,
+              variant: status === 'offline' ? 'destructive' as const : undefined,
+            };
+            // Use a timeout to ensure toast is called after the render cycle
+            setTimeout(() => toast(notification), 0);
           }
         }
         
         let currentUptimeSeconds = newTotalUptimeSeconds;
         if (status === 'online') {
+          // Add the current online duration to the total for the percentage calculation
           currentUptimeSeconds += (now - newLastStatusChange) / 1000;
         }
 
-        const totalMonitoredSeconds = (now - Date.parse(node.id)) / 1000;
+        const appStartTime = (new Date(node.id).getTime());
+        const totalMonitoredSeconds = (now - appStartTime) / 1000;
         const uptime = totalMonitoredSeconds > 0 ? (currentUptimeSeconds / totalMonitoredSeconds) * 100 : 100;
 
         return {
@@ -82,17 +79,13 @@ export function useNodeMonitoring() {
           status,
           latency,
           pingHistory: newHistory,
-          uptime,
+          uptime: Math.min(100, uptime), // Cap at 100
           totalUptimeSeconds: newTotalUptimeSeconds,
           lastStatusChange: newLastStatusChange,
         };
       });
 
-      setNodes(newNodes);
-
-      notifications.forEach(notification => {
-        toast(notification);
-      });
+      setNodes(updatedNodes);
 
     }, pingInterval);
 
