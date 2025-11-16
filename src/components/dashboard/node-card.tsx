@@ -68,11 +68,9 @@ const NodeCard: React.FC<NodeCardProps> = ({ node, onRemove }) => {
   return (
     <Card className="flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       <CardHeader className="flex flex-row items-start justify-between">
-        <div>
-          <CardTitle className="font-headline break-all">{node.name}</CardTitle>
-          <CardDescription>
-            <StatusIndicator status={node.status} />
-          </CardDescription>
+        <div className="flex-1 min-w-0">
+          <CardTitle className="font-headline truncate" title={node.displayName}>{node.displayName}</CardTitle>
+          <CardDescription className="truncate" title={node.name}>{node.name}</CardDescription>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -88,8 +86,11 @@ const NodeCard: React.FC<NodeCardProps> = ({ node, onRemove }) => {
           </DropdownMenuContent>
         </DropdownMenu>
       </CardHeader>
-      <CardContent className="flex-1">
-        <PingChart data={node.pingHistory} />
+      <CardContent className="flex-1 flex flex-col justify-center">
+        <StatusIndicator status={node.status} />
+        <div className='h-[150px] w-full mt-2'>
+            <PingChart data={node.pingHistory} />
+        </div>
       </CardContent>
       <CardFooter className="flex justify-between">
         <p className="text-sm text-muted-foreground">

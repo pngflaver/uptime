@@ -5,6 +5,7 @@ export interface PingData {
 
 export interface Node {
   id: string;
+  displayName: string; // User-friendly name
   name: string; // IP or domain
   status: 'online' | 'offline' | 'pending';
   latency: number | null;

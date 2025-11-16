@@ -68,7 +68,12 @@ const NodeRow: React.FC<NodeRowProps> = ({ node, onRemove }) => {
       <TableCell>
         <StatusIndicator status={node.status} />
       </TableCell>
-      <TableCell className="font-medium break-all">{node.name}</TableCell>
+      <TableCell className="font-medium">
+        <div className="flex flex-col">
+            <span className="font-bold truncate" title={node.displayName}>{node.displayName}</span>
+            <span className="text-xs text-muted-foreground truncate" title={node.name}>{node.name}</span>
+        </div>
+      </TableCell>
       <TableCell>
         {node.status === 'online' && node.latency !== null ? `${node.latency} ms` : 'N/A'}
       </TableCell>

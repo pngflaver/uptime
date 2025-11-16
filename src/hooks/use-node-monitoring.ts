@@ -7,10 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 const MAX_HISTORY = 30;
 
 const initialNodes: Node[] = [
-  { id: '1', name: 'google.com', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
-  { id: '2', name: 'api.github.com', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
-  { id: '3', name: '1.1.1.1', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
-  { id: '4', name: 'down-node.test', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
+  { id: '1', displayName: 'Google', name: 'google.com', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
+  { id: '2', displayName: 'GitHub API', name: 'api.github.com', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
+  { id: '3', displayName: 'Cloudflare DNS', name: '1.1.1.1', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
+  { id: '4', displayName: 'Offline Test', name: 'down-node.test', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
 ];
 
 export function useNodeMonitoring() {
@@ -56,7 +56,7 @@ export function useNodeMonitoring() {
           if (node.status !== 'pending') { // Don't show notifications for initial state
             const notification = {
               title: status === 'offline' ? 'Node Unreachable' : 'Node Connection Restored',
-              description: `${node.name} is now ${status}.`,
+              description: `${node.displayName} (${node.name}) is now ${status}.`,
               variant: status === 'offline' ? 'destructive' as const : undefined,
             };
             // Use a timeout to ensure toast is called after the render cycle
@@ -92,18 +92,19 @@ export function useNodeMonitoring() {
     return () => clearInterval(intervalId);
   }, [pingInterval, simulatePing, toast, nodes]);
 
-  const addNode = useCallback((name: string) => {
+  const addNode = useCallback((displayName: string, name: string) => {
     setNodes(prevNodes => {
       if (prevNodes.some(node => node.name === name)) {
         toast({
             title: "Node Exists",
-            description: `Node with name "${name}" is already being monitored.`,
+            description: `Node with address "${name}" is already being monitored.`,
             variant: "destructive",
         });
         return prevNodes;
       }
       const newNode: Node = {
         id: new Date().toISOString(), // Use ISO string for a more reliable start time
+        displayName,
         name,
         status: 'pending',
         latency: null,

@@ -14,14 +14,17 @@ import { Slider } from '@/components/ui/slider';
 interface SettingsDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onAddNode: (name: string) => void;
+  onAddNode: (displayName: string, name: string) => void;
   pingInterval: number;
   onPingIntervalChange: (value: number) => void;
 }
 
 const formSchema = z.object({
+  displayName: z.string().min(1, {
+    message: 'Display name is required.',
+  }),
   name: z.string().min(3, {
-    message: 'Node name must be at least 3 characters.',
+    message: 'Node address must be at least 3 characters.',
   }),
 });
 
@@ -35,12 +38,13 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      displayName: '',
       name: '',
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    onAddNode(values.name);
+    onAddNode(values.displayName, values.name);
     form.reset();
   }
 
@@ -58,6 +62,19 @@ const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-4">
               <h3 className="font-medium">Add New Node</h3>
+              <FormField
+                control={form.control}
+                name="displayName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Display Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., My Web Server" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="name"
