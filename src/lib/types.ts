@@ -9,7 +9,9 @@ export interface Node {
   status: 'online' | 'offline' | 'pending';
   latency: number | null;
   pingHistory: PingData[];
-  uptime: number;
+  uptime: number; // Uptime percentage
+  totalUptimeSeconds: number; // Total time in seconds the node has been online
+  lastStatusChange: number; // Timestamp of the last status change
 }
 
 export type ViewMode = 'grid' | 'list';

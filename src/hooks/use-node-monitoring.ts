@@ -7,10 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 const MAX_HISTORY = 30;
 
 const initialNodes: Node[] = [
-  { id: '1', name: 'google.com', status: 'pending', latency: null, pingHistory: [], uptime: 0 },
-  { id: '2', name: 'api.github.com', status: 'pending', latency: null, pingHistory: [], uptime: 0 },
-  { id: '3', name: '1.1.1.1', status: 'pending', latency: null, pingHistory: [], uptime: 0 },
-  { id: '4', name: 'down-node.test', status: 'pending', latency: null, pingHistory: [], uptime: 0 },
+  { id: '1', name: 'google.com', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
+  { id: '2', name: 'api.github.com', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
+  { id: '3', name: '1.1.1.1', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
+  { id: '4', name: 'down-node.test', status: 'pending', latency: null, pingHistory: [], uptime: 100, totalUptimeSeconds: 0, lastStatusChange: Date.now() },
 ];
 
 export function useNodeMonitoring() {
@@ -34,32 +34,48 @@ export function useNodeMonitoring() {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      const now = new Date();
-      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const now = Date.now();
+      const timeStr = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       const notifications: Array<{ title: string; description: string; variant?: 'destructive' }> = [];
 
       const newNodes = nodes.map(node => {
         const { status, latency } = simulatePing(node);
         
-        const newPingData: PingData = { time, latency };
+        const newPingData: PingData = { time: timeStr, latency };
         const newHistory = [newPingData, ...node.pingHistory].slice(0, MAX_HISTORY);
 
-        const onlinePings = newHistory.filter(p => p.latency !== null).length;
-        const uptime = newHistory.length > 0 ? (onlinePings / newHistory.length) * 100 : 0;
+        let newTotalUptimeSeconds = node.totalUptimeSeconds;
+        let newLastStatusChange = node.lastStatusChange;
 
-        if (node.status !== 'offline' && status === 'offline') {
-           notifications.push({
-              title: 'Node Unreachable',
-              description: `${node.name} is now offline.`,
-              variant: 'destructive',
-           });
+        if (status !== node.status) {
+          if (node.status === 'online') {
+            newTotalUptimeSeconds += (now - node.lastStatusChange) / 1000;
+          }
+          newLastStatusChange = now;
+          
+          if (node.status !== 'pending') {
+            if (status === 'offline') {
+              notifications.push({
+                  title: 'Node Unreachable',
+                  description: `${node.name} is now offline.`,
+                  variant: 'destructive',
+              });
+            } else if (status === 'online') {
+              notifications.push({
+                  title: 'Node Connection Restored',
+                  description: `${node.name} is back online.`,
+              });
+            }
+          }
         }
-        if (node.status === 'offline' && status === 'online') {
-          notifications.push({
-              title: 'Node Connection Restored',
-              description: `${node.name} is back online.`,
-          });
+        
+        let currentUptimeSeconds = newTotalUptimeSeconds;
+        if (status === 'online') {
+          currentUptimeSeconds += (now - newLastStatusChange) / 1000;
         }
+
+        const totalMonitoredSeconds = (now - Date.parse(node.id)) / 1000;
+        const uptime = totalMonitoredSeconds > 0 ? (currentUptimeSeconds / totalMonitoredSeconds) * 100 : 100;
 
         return {
           ...node,
@@ -67,6 +83,8 @@ export function useNodeMonitoring() {
           latency,
           pingHistory: newHistory,
           uptime,
+          totalUptimeSeconds: newTotalUptimeSeconds,
+          lastStatusChange: newLastStatusChange,
         };
       });
 
@@ -92,12 +110,14 @@ export function useNodeMonitoring() {
         return prevNodes;
       }
       const newNode: Node = {
-        id: new Date().getTime().toString(),
+        id: new Date().toISOString(), // Use ISO string for a more reliable start time
         name,
         status: 'pending',
         latency: null,
         pingHistory: [],
-        uptime: 0,
+        uptime: 100,
+        totalUptimeSeconds: 0,
+        lastStatusChange: Date.now(),
       };
       return [...prevNodes, newNode];
     });
