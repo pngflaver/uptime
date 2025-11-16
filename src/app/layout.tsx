@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 export const metadata: Metadata = {
   title: 'NodeVigil',
   description: 'A modern dashboard to monitor your nodes.',
+  icons: {
+    icon: 'https://img.icons8.com/?size=100&id=ez7twa14r0J7&format=png&color=000000',
+  },
 };
 
 export default function RootLayout({
