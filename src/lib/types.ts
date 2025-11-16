@@ -16,3 +16,13 @@ export interface Node {
 }
 
 export type ViewMode = 'grid' | 'list';
+
+export interface ActivityLog {
+  id: string;
+  nodeId: string;
+  nodeDisplayName: string;
+  nodeName: string;
+  status: 'online' | 'offline';
+  timestamp: number;
+  duration: number; // in seconds, how long the previous state lasted
+}

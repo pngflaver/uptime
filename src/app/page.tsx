@@ -6,7 +6,8 @@ import NodeList from '@/components/dashboard/node-list';
 import SettingsDialog from '@/components/dashboard/settings-dialog';
 import EditNodeDialog from '@/components/dashboard/edit-node-dialog';
 import { useNodeMonitoring } from '@/hooks/use-node-monitoring';
-import type { Node, ViewMode } from '@/lib/types';
+import type { Node, ViewMode, ActivityLog } from '@/lib/types';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -19,7 +20,17 @@ export default function Home() {
     updateNode,
     pingInterval,
     setPingInterval,
+    activityLog,
   } = useNodeMonitoring();
+
+  const router = useRouter();
+
+  const handleOpenActivity = () => {
+    // Stash the activity log in session storage before navigating
+    sessionStorage.setItem('activityLog', JSON.stringify(activityLog));
+    sessionStorage.setItem('nodes', JSON.stringify(nodes));
+    router.push('/activity');
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -27,6 +38,7 @@ export default function Home() {
         onOpenSettings={() => setIsSettingsOpen(true)}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
+        onOpenActivity={handleOpenActivity}
       />
       <main className="flex-1 p-4 sm:p-6 lg:p-8">
         <NodeList 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Node, PingData } from '@/lib/types';
+import type { Node, PingData, ActivityLog } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
 
 const MAX_HISTORY = 30;
@@ -16,6 +16,7 @@ const initialNodes: Node[] = [
 export function useNodeMonitoring() {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [pingInterval, setPingInterval] = useState(3000); // ms
+  const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const { toast } = useToast();
 
   const simulatePing = useCallback((node: Node) => {
@@ -37,6 +38,9 @@ export function useNodeMonitoring() {
       const now = Date.now();
       const timeStr = new Date(now).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       
+      const newActivity: ActivityLog[] = [];
+      const notifications: Parameters<typeof toast>[] = [];
+
       const updatedNodes = nodes.map(node => {
         const { status, latency } = simulatePing(node);
         
@@ -48,19 +52,29 @@ export function useNodeMonitoring() {
 
         // Status changed, handle uptime calculation and notifications
         if (status !== node.status && node.status !== 'pending') {
+          const duration = (now - node.lastStatusChange) / 1000;
           if (node.status === 'online') { // If it *was* online, add the duration to total uptime
-            newTotalUptimeSeconds += (now - node.lastStatusChange) / 1000;
+            newTotalUptimeSeconds += duration;
           }
+
+          newActivity.push({
+            id: new Date().toISOString() + Math.random(),
+            nodeId: node.id,
+            nodeDisplayName: node.displayName,
+            nodeName: node.name,
+            status,
+            timestamp: now,
+            duration,
+          });
+
           newLastStatusChange = now; // Reset the status change timestamp
           
           if (node.status !== 'pending') { // Don't show notifications for initial state
-            const notification = {
+            notifications.push([{
               title: status === 'offline' ? 'Node Unreachable' : 'Node Connection Restored',
               description: `${node.displayName} (${node.name}) is now ${status}.`,
               variant: status === 'offline' ? 'destructive' as const : undefined,
-            };
-            // Use a timeout to ensure toast is called after the render cycle
-            setTimeout(() => toast(notification), 0);
+            }]);
           }
         } else if (node.status === 'pending') {
           newLastStatusChange = now; // Set initial status change time
@@ -88,6 +102,14 @@ export function useNodeMonitoring() {
       });
 
       setNodes(updatedNodes);
+
+      if (newActivity.length > 0) {
+        setActivityLog(prevLog => [...newActivity, ...prevLog]);
+      }
+      
+      if (notifications.length > 0) {
+        notifications.forEach(n => toast(...n));
+      }
 
     }, pingInterval);
 
@@ -135,5 +157,5 @@ export function useNodeMonitoring() {
     setPingInterval(value * 1000);
   }
 
-  return { nodes, addNode, removeNode, updateNode, pingInterval: pingInterval / 1000, setPingInterval: handleSetPingInterval };
+  return { nodes, addNode, removeNode, updateNode, pingInterval: pingInterval / 1000, setPingInterval: handleSetPingInterval, activityLog };
 }

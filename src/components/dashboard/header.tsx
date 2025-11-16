@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Settings, LayoutGrid, List } from 'lucide-react';
+import { Settings, LayoutGrid, List, History } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import type { ViewMode } from '@/lib/types';
 
@@ -9,9 +9,10 @@ interface HeaderProps {
   onOpenSettings: () => void;
   viewMode: ViewMode;
   onViewModeChange: (view: ViewMode) => void;
+  onOpenActivity: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onOpenSettings, viewMode, onViewModeChange }) => {
+const Header: React.FC<HeaderProps> = ({ onOpenSettings, viewMode, onViewModeChange, onOpenActivity }) => {
   return (
     <header className="flex items-center justify-between p-4 border-b bg-card shadow-sm">
       <div className="flex items-center gap-3">
@@ -29,6 +30,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenSettings, viewMode, onViewModeCha
             <List className="h-4 w-4" />
           </ToggleGroupItem>
         </ToggleGroup>
+
+        <Button variant="outline" size="icon" onClick={onOpenActivity} aria-label="Open activity log">
+          <History className="h-5 w-5" />
+        </Button>
+
         <Button variant="outline" size="icon" onClick={onOpenSettings} aria-label="Open settings">
           <Settings className="h-5 w-5" />
         </Button>
