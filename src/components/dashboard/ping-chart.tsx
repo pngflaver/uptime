@@ -20,10 +20,10 @@ const PingChart: React.FC<PingChartProps> = ({ data }) => {
   const chartData = [...data].reverse();
 
   return (
-    <ChartContainer config={chartConfig} className="h-[150px] w-full">
+    <ChartContainer config={chartConfig} className="h-full w-full">
       <AreaChart
         data={chartData}
-        margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+        margin={{ top: 5, right: 0, left: -20, bottom: 0 }}
         accessibilityLayer
       >
         <CartesianGrid vertical={false} strokeDasharray="3 3" />
@@ -32,20 +32,21 @@ const PingChart: React.FC<PingChartProps> = ({ data }) => {
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          tickFormatter={(value) => value.slice(-5)}
+          tickFormatter={() => ''}
           fontSize={12}
         />
         <YAxis
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          tickCount={4}
-          fontSize={12}
+          tickCount={3}
+          fontSize={10}
           domain={[0, 'dataMax + 50']}
+          hide
         />
         <Tooltip
           cursor={{ fill: 'hsl(var(--muted))', opacity: 0.5 }}
-          content={<ChartTooltipContent indicator="line" />}
+          content={<ChartTooltipContent indicator="line" labelClassName="text-xs" className="text-xs p-2" />}
         />
         <defs>
             <linearGradient id="fillLatency" x1="0" y1="0" x2="0" y2="1">

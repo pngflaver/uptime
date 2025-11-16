@@ -10,3 +10,5 @@ export interface Node {
   latency: number | null;
   pingHistory: PingData[];
 }
+
+export type ViewMode = 'grid' | 'list';

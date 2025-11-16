@@ -1,15 +1,18 @@
 import React from 'react';
-import type { Node } from '@/lib/types';
+import type { Node, ViewMode } from '@/lib/types';
 import NodeCard from './node-card';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Info } from 'lucide-react';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import NodeRow from './node-row';
 
 interface NodeListProps {
   nodes: Node[];
   onRemoveNode: (id: string) => void;
+  viewMode: ViewMode;
 }
 
-const NodeList: React.FC<NodeListProps> = ({ nodes, onRemoveNode }) => {
+const NodeList: React.FC<NodeListProps> = ({ nodes, onRemoveNode, viewMode }) => {
   if (nodes.length === 0) {
     return (
       <Card className="mt-8 col-span-full">
@@ -24,6 +27,29 @@ const NodeList: React.FC<NodeListProps> = ({ nodes, onRemoveNode }) => {
         </CardContent>
       </Card>
     );
+  }
+
+  if (viewMode === 'list') {
+    return (
+        <Card>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Node</TableHead>
+                        <TableHead>Latency</TableHead>
+                        <TableHead className="w-[150px] hidden sm:table-cell">Ping History</TableHead>
+                        <TableHead className="w-[50px] text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {nodes.map(node => (
+                        <NodeRow key={node.id} node={node} onRemove={onRemoveNode} />
+                    ))}
+                </TableBody>
+            </Table>
+        </Card>
+    )
   }
 
   return (
